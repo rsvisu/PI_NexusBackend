@@ -1,0 +1,20 @@
+### Comprobar que el servidor está funcionando
+GET http://localhost:3000/api/status
+
+### Enviar mensajes al chat
+POST http://localhost:3000/api/chat
+Content-Type: application/json
+
+{
+  "conversation_token": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "Hola, ¿cuál es el horario de secretaría? Me llamo Robert, por cierto"
+}
+
+###
+POST http://localhost:3000/api/chat
+Content-Type: application/json
+
+{
+  "conversation_token": "550e8400-e29b-41d4-a716-446655440000",
+  "message": "Gracias, ¿como me llamo?"
+}
