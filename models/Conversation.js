@@ -2,25 +2,34 @@ import supabase from '../database/supabaseClient.js';
 
 class Conversation {
 
-    static async findOrCreate(conversationToken) {
+    static async find(conversationToken) {
         // Buscamos si ya existe una conversación con ese token
-        const { data: existing } = await supabase
+        const { data } = await supabase
             .from('conversations')
             .select('*')
             .eq('conversation_token', conversationToken)
-            .single();
+            .single()
 
-        if (existing) return existing;
+        return data
+    }
+
+    static async findOrCreate(conversationToken) {
+        // Buscamos si ya existe una conversación con ese token
+        const existing = await this.find(conversationToken)
+
+        if (existing) {
+            return existing
+        }
 
         // Si no existe, la creamos
         const { data: created } = await supabase
             .from('conversations')
             .insert({ conversation_token: conversationToken })
             .select()
-            .single();
+            .single()
 
-        return created;
+        return created
     }
 }
 
-export default Conversation;
+export default Conversation
