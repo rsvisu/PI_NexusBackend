@@ -73,6 +73,35 @@ class ChatController {
 
   }
 
+  static async deleteChatHistory(req, res) {
+    // ## Variables:
+    const { conversation_token } = req.params
+
+    // ## Validaciones: (TODO: considerar usar zod para esto)
+    if (!conversation_token) {
+      throw new AppError("El 'conversation_token' no se ha proporcionado", 400)
+    }
+
+    if (!uuidValidateV4(conversation_token)) {
+      throw new AppError("Se requiere un 'conversation_token' valido ", 400)
+    }
+
+    // ## Lógica:
+    // Buscamos la conversación con ese token
+    const conversation = await Conversation.find(conversation_token)
+
+    if (!conversation) {
+      throw new AppError("Conversación no encontrada", 404)
+    }
+
+    // Borramos la conversación y sus mensajes
+    await Conversation.delete(conversation_token)
+
+    // ## Return
+    return res.status(204).send()
+
+  }
+
 }
 
 export default ChatController

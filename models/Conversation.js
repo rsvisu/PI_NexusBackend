@@ -30,6 +30,15 @@ class Conversation {
 
         return created
     }
+
+    static async delete(conversationToken) {
+        // Borramos la conversación
+        await supabase
+            .from('conversations')
+            .delete()
+            .eq('conversation_token', conversationToken)
+    }
+
 }
 
 export default Conversation
