@@ -1,3 +1,4 @@
+import consola from 'consola';
 import AppError from '../errors/AppError.js';
 
 function errorHandler(err, req, res, next) {
@@ -8,7 +9,7 @@ function errorHandler(err, req, res, next) {
     }
 
     // Error inesperado: fallo de base de datos, bug, etc
-    console.error(err);
+    consola.error(err);
     return res.status(500).json({
         error: "Lo siento, tengo problemas de conexión ahora mismo"
     });
