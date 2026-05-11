@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express';
 import cors from 'cors';
 import chatRoutes from './routes/chatRoutes.js';
+import errorHandler from './middlewares/errorHandler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,9 @@ app.use('/api/chat', chatRoutes);
 app.get('/api/status', (req, res) => {
     res.json({ status: 'OK', message: 'Servidor funcionando correctamente' });
 });
+
+// Errores:
+app.use(errorHandler);
 
 // Levantamos el servidor:
 app.listen(PORT, () => {
