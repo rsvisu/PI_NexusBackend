@@ -30,34 +30,33 @@ REGLAS DE COMPORTAMIENTO:
 4. Identifícate como "Nexus", el asistente del centro.
 `;
 
-/**
- * Función para obtener una respuesta del LLM.
- */
-export async function generateResponse(userMessage, history = []) {
-  try {
+class LlmService {
+  static async generateResponse(userMessage, history = []) {
+    try {
 
-    // Iniciamos el array con el System Prompt
-    const messages = [new SystemMessage(SYSTEM_PROMPT)];
+      // Iniciamos el array con el System Prompt
+      const messages = [new SystemMessage(SYSTEM_PROMPT)];
 
-    // Recorremos el historial que nos manda el frontend y lo añadimos
-    // Asumimos que el frontend envía objetos tipo { role: 'user' | 'assistant', content: 'texto' }
-    for (const msg of history) {
-      if (msg.role === "user") {
-        messages.push(new HumanMessage(msg.content));
-      } else if (msg.role === "assistant") {
-        messages.push(new AIMessage(msg.content));
+      for (const msg of history) {
+        if (msg.sender_type === "user") {
+          messages.push(new HumanMessage(msg.content));
+        } else if (msg.sender_type === "assistant") {
+          messages.push(new AIMessage(msg.content));
+        }
       }
+
+      // Añadimos la pregunta actual del usuario al final
+      messages.push(new HumanMessage(userMessage));
+
+      // Invocamos al modelo con todo el array de mensajes
+      const response = await chatModel.invoke(messages);
+
+      return response.content;
+    } catch (error) {
+      console.error("Error en LlmService:", error);
+      throw new Error("Error al comunicarse con la IA");
     }
-
-    // Añadimos la pregunta actual del usuario al final
-    messages.push(new HumanMessage(userMessage));
-
-    // Invocamos al modelo con t0do el array de mensajes
-    const response = await chatModel.invoke(messages);
-
-    return response.content;
-  } catch (error) {
-    console.error("Error en llmService:", error);
-    throw new Error("Error al comunicarse con la IA");
   }
 }
+
+export default LlmService;

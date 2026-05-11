@@ -1,10 +1,10 @@
 import express from 'express';
-import { handleChatRequest } from '../controllers/chatController.js';
+import ChatController from '../controllers/chatController.js';
 
 // /api/chat
 
 const router = express.Router();
 
-router.post('/', handleChatRequest);
+router.post('/', ChatController.handleChatRequest);
 
 export default router;
