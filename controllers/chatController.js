@@ -19,7 +19,7 @@ class ChatController {
       throw new AppError("Se requiere un 'conversation_token' valido ", 400)
     }
 
-    // ## Logica:
+    // ## Lógica:
     // Buscamos o creamos la conversación con ese token
     const conversation = await Conversation.findOrCreate(conversation_token)
 
@@ -55,7 +55,7 @@ class ChatController {
       throw new AppError("Se requiere un 'conversation_token' valido ", 400)
     }
 
-    // ## Logica:
+    // ## Lógica:
     // Buscamos la conversación con ese token
     const conversation = await Conversation.find(conversation_token)
 
