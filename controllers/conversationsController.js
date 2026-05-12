@@ -20,10 +20,14 @@ class ConversationsController {
     }
 
     // ## Lógica:
+    const conversation = await Conversation.findById(id)
+    if (!conversation) {
+      throw new AppError("Conversación no encontrada", 404)
+    }
     const messages = await Message.getHistory(id)
 
     // ## Return
-    return res.json({ messages })
+    return res.json({ conversation, messages })
   }
 
 }

@@ -46,6 +46,18 @@ class Conversation {
         if (error) throw error
     }
 
+    static async findById(id) {
+        const { data, error } = await supabase
+            .from('conversations')
+            .select('id, started_at')
+            .eq('id', id)
+            .maybeSingle()
+
+        if (error) throw error
+
+        return data
+    }
+
     static async getAll() {
         // Obtenemos todas las conversaciones con sus mensajes incluidos
         const { data, error } = await supabase

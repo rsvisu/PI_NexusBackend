@@ -6,7 +6,7 @@ class Message {
         // Cargamos todos los mensajes de la conversación ordenados por fecha
         const { data } = await supabase
             .from('messages')
-            .select('sender_type, content')
+            .select('sender_type, content, created_at')
             .eq('conversation_id', conversationId)
             .order('created_at', { ascending: true });
 

@@ -19,8 +19,14 @@ Content-Type: application/json
   "message": "Gracias, ¿como me llamo?"
 }
 
-### Recuperar Historial
+### Recuperar historial
 GET http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
 
 ### Borrar historial
 DELETE http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
+
+### Recuperar conversaciones
+GET http://localhost:3000/api/conversations
+
+### Recuperar una conversacion
+GET http://localhost:3000/api/conversations/1
