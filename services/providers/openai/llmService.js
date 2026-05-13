@@ -1,8 +1,10 @@
 import { SystemMessage, HumanMessage, AIMessage } from "langchain";
 import { ChatOpenAI } from "@langchain/openai";
+import config from "../../../config/app.js";
 
 const chatModel = new ChatOpenAI({
-  modelName: "gpt-4o-mini",
+  apiKey: config.llm.openAI.apiKey,
+  modelName: config.llm.openAI.model,
   temperature: 0.2,
 });
 
