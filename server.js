@@ -1,14 +1,20 @@
+// # Importaciones:
+// ## Dependecias
 import 'dotenv/config'
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import consola from 'consola';
+// ## Configuración
 import config from './config/app.js';
-import createChatRouter from './routes/chatRoutes.js';
-import createConversationsRouter from './routes/conversationsRoutes.js';
+// ## Rutas
+import chatRouter from './routes/chatRoutes.js';
+import conversationsRouter from './routes/conversationsRoutes.js';
+// ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
-import createChatRateLimiter from './middlewares/rateLimiter.js';
+import { chatRateLimiter } from './middlewares/rateLimiter.js';
 
+// # Inicialización de la aplicación:
 const app = express();
 
 // # Middlewares:
@@ -18,19 +24,17 @@ app.use(cors({
   methods: ['GET', 'POST', 'DELETE'],
 }));
 
-// ## Json
+// ## JSON
 app.use(express.json());
 
 // ## Logger
 app.use(morgan('dev', { stream: { write: (msg) => consola.log(msg.trim()) } }));
 
 // # Rutas:
-
 // ## Chat
-app.use('/api/chat', createChatRateLimiter(), createChatRouter());
+app.use('/api/chat', chatRateLimiter, chatRouter);
 // ## Conversaciones
-app.use('/api/conversations', createConversationsRouter());
-
+app.use('/api/conversations', conversationsRouter);
 // ## Estatus
 app.get('/api/status', (req, res) => {
   res.json({ status: 'OK', message: 'Servidor funcionando correctamente' });

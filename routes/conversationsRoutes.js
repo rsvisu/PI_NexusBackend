@@ -1,11 +1,12 @@
 import express from 'express';
 import ConversationsController from '../controllers/conversationsController.js';
 
-export default function createConversationsRouter() {
-    const router = express.Router()
+// ## Router:
+const conversationsRouter = express.Router()
 
-    router.get('/', ConversationsController.getAll)
-    router.get('/:id', ConversationsController.getOne)
+// ## Rutas:
+conversationsRouter.get('/', ConversationsController.getAll)
+conversationsRouter.get('/:id', ConversationsController.getOne)
 
-    return router
-}
+// ## Exportación:
+export default conversationsRouter

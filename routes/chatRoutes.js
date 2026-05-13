@@ -1,15 +1,16 @@
 import express from 'express';
 import ChatController from '../controllers/chatController.js';
 
-export default function createChatRouter() {
-    const router = express.Router()
+// ## Router:
+const chatRouter = express.Router()
 
-    // Chat
-    router.post('/', ChatController.handleChatRequest)
+// ## Rutas:
+// Chat
+chatRouter.post('/', ChatController.handleChatRequest)
 
-    // Historial
-    router.get('/history/:conversation_token', ChatController.getChatHistory)
-    router.delete('/history/:conversation_token', ChatController.deleteChatHistory)
+// Historial
+chatRouter.get('/history/:conversation_token', ChatController.getChatHistory)
+chatRouter.delete('/history/:conversation_token', ChatController.deleteChatHistory)
 
-    return router
-}
+// ## Exportación:
+export default chatRouter
