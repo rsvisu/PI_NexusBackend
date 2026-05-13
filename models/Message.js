@@ -13,14 +13,15 @@ class Message {
         return data || [];
     }
 
-    static async save(conversationId, senderType, content) {
+    static async save(conversationId, senderType, content, sources = null) {
         // Guardamos un mensaje en la base de datos
         const { data } = await supabase
             .from('messages')
             .insert({
                 conversation_id: conversationId,
                 sender_type: senderType,
-                content: content
+                content,
+                sources,
             })
             .select()
             .single();

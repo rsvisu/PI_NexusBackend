@@ -1,4 +1,5 @@
-import LlmService from '../services/providers/openai/llmService.js'
+import LlmService from '../services/llmService.js'
+import RagService from '../services/ragService.js'
 import Conversation from '../models/Conversation.js'
 import Message from '../models/Message.js'
 import AppError from '../errors/AppError.js'
@@ -10,7 +11,7 @@ class ChatController {
     // ## Variables:
     const { message, conversation_token } = req.body
 
-    // ## Validaciones: (TODO: considerar usar zod para esto)
+    // ## Validaciones: ; TODO: considerar usar zod para esto
     if (!message || message.trim() === '') {
       throw new AppError("El mensaje no puede estar vacío", 400)
     }
@@ -20,20 +21,19 @@ class ChatController {
     }
 
     // ## Lógica:
-    // Buscamos o creamos la conversación con ese token
+    // Buscamos o creamos la conversación con ese token y cargamos el historial desde la base de datos
     const conversation = await Conversation.findOrCreate(conversation_token)
-
-    // Cargamos el historial desde la base de datos
     const history = await Message.getHistory(conversation.id)
 
     // Guardamos el mensaje del usuario
     await Message.save(conversation.id, 'user', message)
 
-    // Generamos la respuesta
-    const aiResponse = await LlmService.generateResponse(message, history)
+    // Generamos la respuesta con el contexto inyectado en el prompt
+    const context = await RagService.retrieveContext(message)
+    const aiResponse = await LlmService.generateResponse(message, history, context)
 
-    // Guardamos la respuesta del asistente
-    await Message.save(conversation.id, 'assistant', aiResponse)
+    // Guardamos la respuesta junto con las fuentes usadas
+    await Message.save(conversation.id, 'assistant', aiResponse, context)
 
     // ## Return
     return res.json({
@@ -46,7 +46,7 @@ class ChatController {
     // ## Variables:
     const { conversation_token } = req.params
 
-    // ## Validaciones: (TODO: considerar usar zod para esto)
+    // ## Validaciones: ; TODO: considerar usar zod para esto
     if (!conversation_token) {
       throw new AppError("El 'conversation_token' no se ha proporcionado", 400)
     }
@@ -77,7 +77,7 @@ class ChatController {
     // ## Variables:
     const { conversation_token } = req.params
 
-    // ## Validaciones: (TODO: considerar usar zod para esto)
+    // ## Validaciones: ; TODO: considerar usar zod para esto
     if (!conversation_token) {
       throw new AppError("El 'conversation_token' no se ha proporcionado", 400)
     }
