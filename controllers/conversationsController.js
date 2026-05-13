@@ -5,8 +5,10 @@ import AppError from '../errors/AppError.js'
 class ConversationsController {
 
   static async getAll(req, res) {
+    // ## Variables:
     const conversations = await Conversation.getAll()
 
+    // ## Return:
     return res.json({ conversations })
   }
 
@@ -26,7 +28,7 @@ class ConversationsController {
     }
     const messages = await Message.getHistory(id)
 
-    // ## Return
+    // ## Return:
     return res.json({ conversation, messages })
   }
 
