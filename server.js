@@ -31,14 +31,19 @@ app.use(express.json());
 app.use(morgan('dev', { stream: { write: (msg) => consola.log(msg.trim()) } }));
 
 // # Rutas:
-// ## Chat
+
+// ## Públicas:
+// ### Chat
 app.use('/api/chat', chatRateLimiter, chatRouter);
-// ## Conversaciones
-app.use('/api/conversations', conversationsRouter);
 // ## Estatus
 app.get('/api/status', (req, res) => {
   res.json({ status: 'OK', message: 'Servidor funcionando correctamente' });
 });
+
+// ## Privadas (Dashboard):
+// ### Conversaciones
+app.use('/api/conversations', conversationsRouter);
+
 
 // # Errores:
 app.use(errorHandler);
