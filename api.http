@@ -1,3 +1,5 @@
+### # Chat:
+
 ### Comprobar que el servidor está funcionando
 GET http://localhost:3000/api/status
 
@@ -25,8 +27,17 @@ GET http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
 ### Borrar historial
 DELETE http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
 
-### Recuperar conversaciones
-GET http://localhost:3000/api/conversations
+### # Dashboard:
+
+### Recuperar conversaciones 
+### (sin token: debe devolver 401)
+GET http://localhost:3000/api/conversation
+
+### Recuperar conversaciones 
+### (token inventado: debe devolver 401)
+GET http://localhost:3000/api/conversation
+Authorization: Bearer token-inventado
 
 ### Recuperar una conversacion
-GET http://localhost:3000/api/conversations/1
+### (sin token: debe devolver 401)
+GET http://localhost:3000/api/conversation/1
