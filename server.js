@@ -13,6 +13,7 @@ import conversationsRouter from './routes/conversationsRoutes.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
 import { chatRateLimiter } from './middlewares/rateLimiter.js';
+import authMiddleware from './middlewares/authMiddleware.js';
 
 // # Inicialización de la aplicación:
 const app = express();
@@ -42,7 +43,7 @@ app.get('/api/status', (req, res) => {
 
 // ## Privadas (Dashboard):
 // ### Conversaciones
-app.use('/api/conversations', conversationsRouter);
+app.use('/api/conversation', authMiddleware, conversationsRouter);
 
 
 // # Errores:
