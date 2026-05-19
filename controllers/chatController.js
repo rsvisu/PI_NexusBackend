@@ -87,15 +87,12 @@ class ChatController {
     }
 
     // ## Lógica:
-    // Buscamos la conversación con ese token
-    const conversation = await Conversation.find(conversation_token)
+    const deleted = await Conversation.delete(conversation_token)
 
-    if (!conversation) {
+    // Si deleted es null, significa que no existía la conversación
+    if (!deleted) {
       throw new AppError("Conversación no encontrada", 404)
     }
-
-    // Borramos la conversación y sus mensajes
-    await Conversation.delete(conversation_token)
 
     // ## Return
     return res.status(204).send()

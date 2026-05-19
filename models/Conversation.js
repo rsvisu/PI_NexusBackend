@@ -36,16 +36,6 @@ class Conversation {
         return created
     }
 
-    static async delete(conversationToken) {
-        // Borramos la conversación
-        const { error } = await supabase
-            .from('conversations')
-            .delete()
-            .eq('conversation_token', conversationToken)
-
-        if (error) throw error
-    }
-
     static async findById(id) {
         const { data, error } = await supabase
             .from('conversations')
@@ -77,6 +67,26 @@ class Conversation {
                 .toSorted((a, b) => new Date(a.created_at) - new Date(b.created_at))
                 .find(m => m.sender_type === 'user')?.content ?? null
         }))
+    }
+
+    /**
+     * Borra una conversación y devuelve la fila borrada, o null si no existía.
+     * Sus mensajes se borran por el ON DELETE CASCADE.
+     *
+     * @param {string} conversationToken - UUID público de la conversación
+     * @returns {Promise<Object|null>} La conversación borrada, o null si no existía
+     */
+    static async delete(conversationToken) {
+        const { data, error } = await supabase
+            .from('conversations')
+            .delete()
+            .eq('conversation_token', conversationToken)
+            .select()
+            .maybeSingle()
+
+        if (error) throw error
+
+        return data
     }
 
 }
