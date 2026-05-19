@@ -15,9 +15,14 @@ const config = {
     }
   },
   chat: {
+    // 10 requests por minuto por IP por defecto
     rateLimitMax: parseInt(process.env.CHAT_RATE_LIMIT_MAX ?? '10'),
     rateLimitWindowSeconds: 60,
   },
+  upload: {
+    maxSizeMb: parseInt(process.env.UPLOAD_MAX_SIZE_MB ?? '5'), // 5MB por defecto
+    allowedMimeTypes: ['application/pdf', 'text/plain', 'text/markdown']
+  }
 }
 
 export default config
