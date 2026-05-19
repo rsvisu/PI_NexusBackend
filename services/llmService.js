@@ -1,6 +1,8 @@
 import { SystemMessage, HumanMessage, AIMessage } from "langchain";
 import { ChatOpenAI } from "@langchain/openai";
+import consola from "consola";
 import config from "../config/app.js";
+import AppError from "../errors/AppError.js";
 
 const chatModel = new ChatOpenAI({
   apiKey: config.llm.openAI.apiKey,
@@ -73,7 +75,11 @@ class LlmService {
 
       return response.content;
     } catch (error) {
-      throw new Error("Error al comunicarse con el modelo", error);
+      consola.error("Fallo al invocar el modelo LLM:", error);
+      throw new AppError(
+        "No he podido generar una respuesta ahora mismo. Inténtalo de nuevo en unos minutos.",
+        503,
+      );
     }
   }
 }
