@@ -30,6 +30,7 @@ class ChatController {
 
     // Generamos la respuesta con el contexto inyectado en el prompt
     const context = await RagService.retrieveContext(message)
+    // TODO: si la generacion falla guardar en la base de datos que hubo un error en la respuesta para poder mostrarlo al usuario y al recargar y en el dashboard, y no perder el contexto de la conversación
     const aiResponse = await LlmService.generateResponse(message, history, context)
 
     // Guardamos la respuesta junto con las fuentes usadas
