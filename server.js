@@ -10,6 +10,7 @@ import config from './config/app.js';
 // ## Rutas
 import chatRouter from './routes/chatRoutes.js';
 import conversationsRouter from './routes/conversationsRoutes.js';
+import documentRouter from './routes/documentRoutes.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
 import { chatRateLimiter } from './middlewares/rateLimiter.js';
@@ -22,7 +23,7 @@ const app = express();
 // ## Cors
 app.use(cors({
   origin: config.app.allowedOrigins ?? '*',
-  methods: ['GET', 'POST', 'DELETE'],
+  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
 }));
 
 // ## JSON
@@ -44,6 +45,8 @@ app.get('/api/status', (req, res) => {
 // ## Privadas (Dashboard):
 // ### Conversaciones
 app.use('/api/conversation', authMiddleware, conversationsRouter);
+// ### Documentos
+app.use('/api/document', authMiddleware, documentRouter);
 
 
 // # Errores:
