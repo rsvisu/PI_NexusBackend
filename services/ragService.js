@@ -4,11 +4,15 @@ import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import supabase from '../database/supabaseClient.js';
 import config from '../config/app.js';
 
+// # Configuración:
+
+// ## Embedding:
 const embeddings = new OpenAIEmbeddings({
     apiKey: config.llm.openAI.apiKey,
     modelName: 'text-embedding-3-small',
 });
 
+// ## Vector store:
 // vectorStore solo se usa para leer
 const vectorStore = new SupabaseVectorStore(embeddings, {
     client: supabase,
@@ -16,22 +20,29 @@ const vectorStore = new SupabaseVectorStore(embeddings, {
     queryName: 'match_document_chunks',
 });
 
+// ## Texts splitter:
 const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
 });
 
+// # Servicio:
 class RagService {
     /**
-     * Divide el texto en chunks, genera embeddings y los guarda en document_chunks
-     * @param {*} text Texto a indexar
-     * @param {*} documentId ID del documento al que pertenecen los chunks
+     * Divide en chunks los Document que vienen del loader, genera embeddings
+     * y los guarda en document_chunks
+     *
+     * El controlador solo decide qué loader usar según el tipo
+     * @param {Array} rawDocs - Document[] cargados por el loader
+     * @param {*} documentId - ID del documento al que pertenecen los chunks
      */
-    static async indexDocument(text, documentId) {
-        // El vez de usar la función vectorStore.addDocuments, 
-        // hacemos el INSERT  manual para poder incluir document_id
+    static async indexDocument(rawDocs, documentId) {
+        const docs = await splitter.splitDocuments(rawDocs);
 
-        const docs = await splitter.createDocuments([text]);
+        // INSERT manual en vez de vectorStore.addDocuments: 
+        // addDocuments solo escribe content, metadata, embedding en una tabla y no
+        // admite document_id. Lo necesitamos para ligar cada chunk a su documento
+        // fuente, y así borrarlos en cascada y filtrar por is_active en la búsqueda
         const texts = docs.map((doc) => doc.pageContent);
         const vectors = await embeddings.embedDocuments(texts);
 
@@ -48,11 +59,12 @@ class RagService {
 
     /**
      * Devuelve los chunks más similares a la query junto con su puntuación de similitud
-     * @param {*} query 
+     * @param {*} query - Texto de la consulta del usuario
+     * @param {number} k - Número de chunks a devolver
      * @returns 
      */
-    static async retrieveContext(query) {
-        const results = await vectorStore.similaritySearchWithScore(query, 4);
+    static async retrieveContext(query, k = 4) {
+        const results = await vectorStore.similaritySearchWithScore(query, k);
         return results.map(([doc, score]) => ({
             content: doc.pageContent,
             metadata: doc.metadata,
