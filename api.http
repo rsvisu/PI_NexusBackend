@@ -1,10 +1,16 @@
+### # Variables:
+@baseUrl = http://localhost:3000
+@token = TOKEN
+@documentId = 1
+
+
 ### # Chat:
 
 ### Comprobar que el servidor está funcionando
-GET http://localhost:3000/api/status
+GET {{baseUrl}}/api/status
 
 ### Enviar mensajes al chat
-POST http://localhost:3000/api/chat
+POST {{baseUrl}}/api/chat
 Content-Type: application/json
 
 {
@@ -13,7 +19,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:3000/api/chat
+POST {{baseUrl}}/api/chat
 Content-Type: application/json
 
 {
@@ -22,22 +28,65 @@ Content-Type: application/json
 }
 
 ### Recuperar historial
-GET http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
+GET {{baseUrl}}/api/chat/history/550e8400-e29b-41d4-a716-446655440000
 
 ### Borrar historial
-DELETE http://localhost:3000/api/chat/history/550e8400-e29b-41d4-a716-446655440000
+DELETE {{baseUrl}}/api/chat/history/550e8400-e29b-41d4-a716-446655440000
 
-### # Dashboard:
 
-### Recuperar conversaciones 
-### (sin token: debe devolver 401)
-GET http://localhost:3000/api/conversation
+### # Dashboard > Conversaciones:
 
-### Recuperar conversaciones 
-### (token inventado: debe devolver 401)
-GET http://localhost:3000/api/conversation
+### Recuperar conversaciones (sin token: debe devolver 401)
+GET {{baseUrl}}/api/conversation
+
+### Recuperar conversaciones (token inventado: debe devolver 401)
+GET {{baseUrl}}/api/conversation
 Authorization: Bearer token-inventado
 
-### Recuperar una conversacion
-### (sin token: debe devolver 401)
-GET http://localhost:3000/api/conversation/1
+### Recuperar conversaciones (con token válido)
+GET {{baseUrl}}/api/conversation
+Authorization: Bearer {{token}}
+
+### Recuperar una conversación concreta
+GET {{baseUrl}}/api/conversation/1
+Authorization: Bearer {{token}}
+
+
+### # Dashboard > Documents:
+
+### Listar todos los documentos
+GET {{baseUrl}}/api/document
+Authorization: Bearer {{token}}
+
+### Listar sin token (debe devolver 401)
+GET {{baseUrl}}/api/document
+
+### Obtener URL firmada de descarga para @documentId
+GET {{baseUrl}}/api/document/{{documentId}}/url
+Authorization: Bearer {{token}}
+
+### Desactivar un documento (deja de aparecer en el RAG)
+PATCH {{baseUrl}}/api/document/{{documentId}}/active
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### Reactivar un documento
+PATCH {{baseUrl}}/api/document/{{documentId}}/active
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "is_active": true
+}
+
+### Borrar un documento (borra fila + chunks por CASCADE + archivo en Storage)
+DELETE {{baseUrl}}/api/document/{{documentId}}
+Authorization: Bearer {{token}}
+
+### Borrar uno que no existe (debe devolver 404)
+DELETE {{baseUrl}}/api/document/999999
+Authorization: Bearer {{token}}
