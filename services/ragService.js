@@ -9,7 +9,7 @@ import config from '../config/app.js';
 // ## Embedding:
 const embeddings = new OpenAIEmbeddings({
     apiKey: config.llm.openAI.apiKey,
-    modelName: 'text-embedding-3-small',
+    modelName: config.llm.openAI.embeddingModel,
 });
 
 // ## Vector store:

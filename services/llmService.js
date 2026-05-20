@@ -6,7 +6,7 @@ import AppError from "../errors/AppError.js";
 
 const chatModel = new ChatOpenAI({
   apiKey: config.llm.openAI.apiKey,
-  modelName: config.llm.openAI.model,
+  modelName: config.llm.openAI.chatModel,
   temperature: 0.2,
 });
 
