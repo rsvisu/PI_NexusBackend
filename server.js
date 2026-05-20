@@ -13,7 +13,6 @@ import conversationsRouter from './routes/conversationsRoutes.js';
 import documentRouter from './routes/documentRoutes.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
-import { chatRateLimiter } from './middlewares/rateLimiter.js';
 import authMiddleware from './middlewares/authMiddleware.js';
 
 // # Inicialización de la aplicación:
@@ -36,7 +35,7 @@ app.use(morgan('dev', { stream: { write: (msg) => consola.log(msg.trim()) } }));
 
 // ## Públicas:
 // ### Chat
-app.use('/api/chat', chatRateLimiter, chatRouter);
+app.use('/api/chat', chatRouter);
 // ## Estatus
 app.get('/api/status', (req, res) => {
   res.json({ status: 'OK', message: 'Servidor funcionando correctamente' });
