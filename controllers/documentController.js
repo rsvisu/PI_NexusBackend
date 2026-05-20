@@ -1,8 +1,13 @@
+import { randomUUID } from 'crypto';
+import sanitizeFilename from 'sanitize-filename';
+import consola from 'consola';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
 
 import Document from '../models/Document.js'
 import RagService from '../services/ragService.js'
+import StorageService from '../services/storageService.js'
+import config from '../config/app.js'
 import AppError from '../errors/AppError.js'
 
 class DocumentController {
@@ -44,24 +49,84 @@ class DocumentController {
     // Cargamos el documento con el loader
     const rawDocs = await loader.load()
 
-    // Registramos el documento antes de indexar
-    const document = await Document.create({
-      name: file.originalname,
-      sourceType: 'file',
-      sourceUri: file.originalname,
-    })
+    // Saneamos el nombre original
+    const safeName = sanitizeFilename(file.originalname)
 
-    // Si la indexación falla, borramos el registro (rollback manual)
-    // Los chunks no se insertaron, así que no queda estado parcial
+    // Prefijo UUID para evitar colisiones
+    // El nombre legible esta en documents.name, este path es solo identificador único dentro del bucket
+    const storagePath = `${randomUUID()}-${safeName}`
+
+    // ### Flujo de subida con rollback manual:
+    let storageUploaded = false
+    let document = null
+
     try {
+      // Subimos el archivo a Storage
+      await StorageService.upload(storagePath, file.buffer, file.mimetype)
+      storageUploaded = true
+
+      // Creamos el registro en la BD y obtenemos su ID para relacionar los chunks
+      document = await Document.create({
+        name: file.originalname,
+        sourceType: 'file',
+        sourceUri: storagePath,
+      })
+
+      // Indexamos el documento en RAG, relacionando los chunks con el ID del documento creado
       await RagService.indexDocument(rawDocs, document.id)
-    } catch (error) {
-      await Document.delete(document.id)
+    }
+
+    // Rollback: borramos solo lo que se llegó a crear, en orden inverso.
+    catch (error) {
+      // Si el documento se creó en la BD pero falló algo después, lo borramos para no dejarlo huérfano
+      if (document) {
+        try {
+          await Document.delete(document.id)
+        } catch (cleanupError) {
+          consola.warn(`Rollback fallido en documentController: no se pudo borrar documents.id=${document.id}`, cleanupError)
+        }
+      }
+
+      // Si el archivo se subió a Storage pero falló algo después, lo borramos para no dejarlo huérfano
+      if (storageUploaded) {
+        try {
+          await StorageService.remove(storagePath)
+        } catch (cleanupError) {
+          consola.warn(`Rollback fallido en documentController: archivo huérfano en Storage: ${storagePath}`, cleanupError)
+        }
+      }
+
+      // Finalmente, lanzamos el error original para que se maneje en el middleware de errores
       throw error
     }
 
     // ## Return:
     return res.status(201).json({ document })
+  }
+
+  static async getDownloadUrl(req, res) {
+    // ## Variables:
+    const id = Number.parseInt(req.params.id)
+
+    // ## Validaciones:
+    if (Number.isNaN(id) || id <= 0) {
+      throw new AppError("Se requiere un 'id' válido", 400)
+    }
+
+    // ## Lógica:
+    const document = await Document.findById(id)
+    if (!document) {
+      throw new AppError("Documento no encontrado", 404)
+    }
+
+    // Generamos una URL firmada temporal
+    const url = await StorageService.getSignedUrl(
+      document.source_uri,
+      config.storage.signedUrlExpirySeconds
+    )
+
+    // ## Return:
+    return res.json({ url, expiresIn: config.storage.signedUrlExpirySeconds })
   }
 
   static async toggleActive(req, res) {
@@ -98,10 +163,17 @@ class DocumentController {
     }
 
     // ## Lógica:
-    // Borrando el documento elimina sus chunks automáticamente por el ON DELETE CASCADE
+    // Borrando el documento de la BD se eliminan sus chunks por ON DELETE CASCADE
     const deleted = await Document.delete(id)
     if (!deleted) {
       throw new AppError("Documento no encontrado", 404)
+    }
+
+    // Si falla el borrado en Storage el archivo queda huérfano, pero la fila de BD ya está eliminada
+    try {
+      await StorageService.remove(deleted.source_uri)
+    } catch (error) {
+      consola.warn(`Archivo huérfano en Storage: ${deleted.source_uri}`, error)
     }
 
     // ## Return:

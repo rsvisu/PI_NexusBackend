@@ -7,6 +7,7 @@ const documentRouter = express.Router()
 
 // ## Rutas:
 documentRouter.get('/', DocumentController.list)
+documentRouter.get('/:id/url', DocumentController.getDownloadUrl)
 documentRouter.post('/file', uploadMiddleware.single('file'), DocumentController.upload)
 documentRouter.patch('/:id/active', DocumentController.toggleActive)
 documentRouter.delete('/:id', DocumentController.remove)

@@ -32,6 +32,15 @@ const config = {
   upload: {
     maxSizeMb: parseInt(process.env.UPLOAD_MAX_SIZE_MB || '5'), // 5MB por defecto
     allowedMimeTypes: ['application/pdf', 'text/plain', 'text/markdown']
+  },
+
+  // Configuración de Supabase Storage para los archivos originales
+  storage: {
+    // Bucket privado en Supabase Storage donde se guardan los archivos originales
+    bucket: 'documents',
+
+    // Tiempo de validez de las URLs firmadas para descargar (en segundos)
+    signedUrlExpirySeconds: 60
   }
 }
 
