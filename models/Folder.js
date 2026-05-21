@@ -59,7 +59,7 @@ class Folder {
     /**
      * Borra una carpeta y devuelve la fila borrada, o null si no existía.
      * Los documentos que estuvieran dentro pasan a folder_id = NULL
-     * por el ON DELETE SET NULL del schema
+     * por el ON DELETE SET NULL del schema.
      *
      * @param {number} id - id de la carpeta a borrar
      * @returns {Promise<Object|null>} La carpeta borrada, o null si no existía

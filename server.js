@@ -11,6 +11,7 @@ import config from './config/app.js';
 import chatRouter from './routes/chatRoutes.js';
 import conversationsRouter from './routes/conversationsRoutes.js';
 import documentRouter from './routes/documentRoutes.js';
+import folderRouter from './routes/folderRoutes.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
 import authMiddleware from './middlewares/authMiddleware.js';
@@ -46,6 +47,8 @@ app.get('/api/status', (req, res) => {
 app.use('/api/conversation', authMiddleware, conversationsRouter);
 // ### Documentos
 app.use('/api/document', authMiddleware, documentRouter);
+// ### Carpetas
+app.use('/api/folder', authMiddleware, folderRouter);
 
 
 // # Errores:
