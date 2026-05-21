@@ -5,10 +5,12 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
 
 import Document from '../models/Document.js'
+import Folder from '../models/Folder.js'
 import RagService from '../services/ragService.js'
 import StorageService from '../services/storageService.js'
 import config from '../config/app.js'
 import AppError from '../errors/AppError.js'
+import DocumentSchemas from '../schemas/documentSchemas.js'
 
 class DocumentController {
 
@@ -23,10 +25,21 @@ class DocumentController {
   static async upload(req, res) {
     // ## Variables:
     const file = req.file
+    const { folder_id, expires_at } = DocumentSchemas.validateDocumentUpload(req.body)
 
     // ## Validaciones:
+    // Archivo:
     if (!file) {
       throw new AppError("No se ha enviado ningún archivo", 400)
+    }
+
+    // Carpeta:
+    // Comprobamos si existe la carpeta indicada (si se ha indicado)
+    if (folder_id !== undefined) {
+      const folder = await Folder.findById(folder_id)
+      if (!folder) {
+        throw new AppError("La carpeta indicada no existe", 404)
+      }
     }
 
     // ## Lógica:
@@ -70,6 +83,9 @@ class DocumentController {
         name: file.originalname,
         sourceType: 'file',
         sourceUri: storagePath,
+        // Si no existen se guardan como null:
+        folderId: folder_id,
+        expiresAt: expires_at,
       })
 
       // Indexamos el documento en RAG, relacionando los chunks con el ID del documento creado
