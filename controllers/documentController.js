@@ -28,14 +28,14 @@ class DocumentController {
     const { folder_id, expires_at } = DocumentSchemas.validateDocumentUpload(req.body)
 
     // ## Validaciones:
-    // Archivo:
+    // ### Archivo:
     if (!file) {
       throw new AppError("No se ha enviado ningún archivo", 400)
     }
 
-    // Carpeta:
+    // ### Carpeta:
     // Comprobamos si existe la carpeta indicada (si se ha indicado)
-    if (folder_id !== undefined) {
+    if (folder_id) {
       const folder = await Folder.findById(folder_id)
       if (!folder) {
         throw new AppError("La carpeta indicada no existe", 404)
@@ -67,7 +67,7 @@ class DocumentController {
 
     // Prefijo UUID para evitar colisiones
     // El nombre legible esta en documents.name, este path es solo identificador único dentro del bucket
-    const storagePath = `${randomUUID()}-${safeName}`
+    const storagePath = `${randomUUID()}_${safeName}`
 
     // ### Flujo de subida con rollback manual:
     let storageUploaded = false
@@ -79,13 +79,13 @@ class DocumentController {
       storageUploaded = true
 
       // Creamos el registro en la BD y obtenemos su ID para relacionar los chunks
+      // Mapeamos snake_case (schema) a camelCase (modelo)
       document = await Document.create({
         name: file.originalname,
         sourceType: 'file',
         sourceUri: storagePath,
-        // Si no existen se guardan como null:
-        folderId: folder_id,
-        expiresAt: expires_at,
+        folderId: folder_id ?? null,
+        expiresAt: expires_at ?? null,
       })
 
       // Indexamos el documento en RAG, relacionando los chunks con el ID del documento creado
@@ -122,12 +122,7 @@ class DocumentController {
 
   static async getDownloadUrl(req, res) {
     // ## Variables:
-    const id = Number.parseInt(req.params.id)
-
-    // ## Validaciones:
-    if (Number.isNaN(id) || id <= 0) {
-      throw new AppError("Se requiere un 'id' válido", 400)
-    }
+    const { id } = DocumentSchemas.validateId(req.params)
 
     // ## Lógica:
     const document = await Document.findById(id)
@@ -152,13 +147,15 @@ class DocumentController {
     const { name, folder_id, expires_at } = validated
 
     // ## Validaciones:
+    // ### Campos:
     // Al menos un campo debe venir para actualizar
     if (Object.keys(validated).length === 0) {
       throw new AppError("Se requiere al menos un campo para actualizar", 400)
     }
 
+    // ### Carpeta:
     // Si se quiere mover el documento a una carpeta, esa carpeta debe existir
-    if (folder_id || folder_id === 0) {
+    if (folder_id) {
       const folder = await Folder.findById(folder_id)
       if (!folder) {
         throw new AppError("La carpeta indicada no existe", 404)
@@ -182,20 +179,11 @@ class DocumentController {
 
   static async toggleActive(req, res) {
     // ## Variables:
-    const id = Number.parseInt(req.params.id)
-    const isActive = req.body.is_active
-
-    // ## Validaciones:
-    if (Number.isNaN(id) || id <= 0) {
-      throw new AppError("Se requiere un 'id' válido", 400)
-    }
-
-    if (typeof isActive !== 'boolean') {
-      throw new AppError("Se requiere 'is_active' (true o false)", 400)
-    }
+    const { id } = DocumentSchemas.validateId(req.params)
+    const { is_active } = DocumentSchemas.validateDocumentToggleActive(req.body)
 
     // ## Lógica:
-    const document = await Document.setActive(id, isActive)
+    const document = await Document.setActive(id, is_active)
     if (!document) {
       throw new AppError("Documento no encontrado", 404)
     }
@@ -206,12 +194,7 @@ class DocumentController {
 
   static async remove(req, res) {
     // ## Variables:
-    const id = Number.parseInt(req.params.id)
-
-    // ## Validaciones:
-    if (Number.isNaN(id) || id <= 0) {
-      throw new AppError("Se requiere un 'id' válido", 400)
-    }
+    const { id } = DocumentSchemas.validateId(req.params)
 
     // ## Lógica:
     // Borrando el documento de la BD se eliminan sus chunks por ON DELETE CASCADE

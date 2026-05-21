@@ -7,6 +7,16 @@ const uploadSchema = z.object({
     expires_at: z.coerce.date().optional(),
 })
 
+const updateSchema = z.object({
+    name: z.string().trim().min(1, "El nombre no puede estar vacío").optional(),
+    folder_id: z.coerce.number().int().positive().nullable().optional(),
+    expires_at: z.coerce.date().nullable().optional(),
+})
+
+const toggleActiveSchema = z.object({
+    is_active: z.boolean(),
+})
+
 const idParamsSchema = z.object({
     id: z.coerce.number().int().positive(),
 })
@@ -16,6 +26,14 @@ const idParamsSchema = z.object({
 class DocumentSchemas {
     static validateDocumentUpload(body) {
         return uploadSchema.parse(body)
+    }
+
+    static validateDocumentUpdate(body) {
+        return updateSchema.parse(body)
+    }
+
+    static validateDocumentToggleActive(body) {
+        return toggleActiveSchema.parse(body)
     }
 
     static validateId(params) {
