@@ -41,13 +41,40 @@ class Document {
                 expires_at: expiresAt,
             })
             .select()
-            .single()
+            .single() // <- solo no da error si se devuelve exactamente una fila
 
         if (error) throw error
 
         return data
     }
-    
+
+    /**
+     * Actualiza nombre, carpeta y fecha de expiración de un documento
+     * Los campos no incluidos en el objeto (undefined) no se actualizan
+     * folderId = null mueve el documento a 'sin clasificar'
+     * expiresAt = null elimina la fecha de expiración
+     *
+     * @param {number} id
+     * @param {*} fields
+     * @returns {Promise<Object|null>}
+     */
+    static async update(id, { name, folderId, expiresAt }) {
+        const { data, error } = await supabase
+            .from('documents')
+            .update({
+                name,
+                folder_id: folderId,
+                expires_at: expiresAt,
+            })
+            .eq('id', id)
+            .select()
+            .maybeSingle()
+
+        if (error) throw error
+
+        return data
+    }
+
     /**
      * Activa o desactiva un documento
      * 
