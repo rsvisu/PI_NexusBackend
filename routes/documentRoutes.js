@@ -9,6 +9,7 @@ const documentRouter = express.Router()
 documentRouter.get('/', DocumentController.list)
 documentRouter.get('/:id/url', DocumentController.getDownloadUrl)
 documentRouter.post('/file', uploadMiddleware.single('file'), DocumentController.upload)
+documentRouter.patch('/:id', DocumentController.update)
 documentRouter.patch('/:id/active', DocumentController.toggleActive)
 documentRouter.delete('/:id', DocumentController.remove)
 

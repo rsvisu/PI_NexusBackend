@@ -145,6 +145,41 @@ class DocumentController {
     return res.json({ url, expiresIn: config.storage.signedUrlExpirySeconds })
   }
 
+  static async update(req, res) {
+    // ## Variables:
+    const { id } = DocumentSchemas.validateId(req.params)
+    const validated = DocumentSchemas.validateDocumentUpdate(req.body)
+    const { name, folder_id, expires_at } = validated
+
+    // ## Validaciones:
+    // Al menos un campo debe venir para actualizar
+    if (Object.keys(validated).length === 0) {
+      throw new AppError("Se requiere al menos un campo para actualizar", 400)
+    }
+
+    // Si se quiere mover el documento a una carpeta, esa carpeta debe existir
+    if (folder_id || folder_id === 0) {
+      const folder = await Folder.findById(folder_id)
+      if (!folder) {
+        throw new AppError("La carpeta indicada no existe", 404)
+      }
+    }
+
+    // ## Lógica:
+    // Mapeamos snake_case (schema) a camelCase (modelo)
+    const document = await Document.update(id, {
+      name,
+      folderId: folder_id,
+      expiresAt: expires_at,
+    })
+    if (!document) {
+      throw new AppError("Documento no encontrado", 404)
+    }
+
+    // ## Return:
+    return res.json({ document })
+  }
+
   static async toggleActive(req, res) {
     // ## Variables:
     const id = Number.parseInt(req.params.id)

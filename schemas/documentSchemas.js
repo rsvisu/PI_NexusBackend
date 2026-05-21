@@ -7,11 +7,19 @@ const uploadSchema = z.object({
     expires_at: z.coerce.date().optional(),
 })
 
+const idParamsSchema = z.object({
+    id: z.coerce.number().int().positive(),
+})
+
 // # Funciones validadoras:
 // Cada una lanza ZodError si la entrada es inválida (lo captura el errorHandler)
 class DocumentSchemas {
     static validateDocumentUpload(body) {
         return uploadSchema.parse(body)
+    }
+
+    static validateId(params) {
+        return idParamsSchema.parse(params)
     }
 }
 
