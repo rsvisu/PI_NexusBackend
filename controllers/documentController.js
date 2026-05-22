@@ -33,6 +33,9 @@ class DocumentController {
       throw new AppError("No se ha enviado ningún archivo", 400)
     }
 
+    // Solución de problema de multer para leer el nombre en UTF-8
+    file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
     // ### Carpeta:
     // Comprobamos si existe la carpeta indicada (si se ha indicado)
     if (folder_id) {
