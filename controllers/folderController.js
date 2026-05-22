@@ -25,7 +25,6 @@ class FolderController {
     }
 
     // ## Lógica:
-
     try {
       const folder = await Folder.create({ name })
       return res.status(201).json({ folder })

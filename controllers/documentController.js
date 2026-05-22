@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import sanitizeFilename from 'sanitize-filename';
+import slugify from 'slugify';
 import consola from 'consola';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
@@ -63,7 +63,7 @@ class DocumentController {
     const rawDocs = await loader.load()
 
     // Saneamos el nombre original
-    const safeName = sanitizeFilename(file.originalname)
+    const safeName = slugify(file.originalname, { lower: true, locale: 'es', strict: false })
 
     // Prefijo UUID para evitar colisiones
     // El nombre legible esta en documents.name, este path es solo identificador único dentro del bucket
