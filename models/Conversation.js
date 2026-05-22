@@ -2,11 +2,11 @@ import supabase from '../database/supabaseClient.js';
 
 class Conversation {
 
-    static async find(conversationToken) {
+    static async find(conversation_token) {
         const { data, error } = await supabase
             .from('conversations')
             .select('*')
-            .eq('conversation_token', conversationToken)
+            .eq('conversation_token', conversation_token)
             // maybeSingle() devuelve null si no encuentra nada
             .maybeSingle()
 
@@ -16,9 +16,9 @@ class Conversation {
         return data
     }
 
-    static async findOrCreate(conversationToken) {
+    static async findOrCreate(conversation_token) {
         // Buscamos si ya existe una conversación con ese token
-        const existing = await this.find(conversationToken)
+        const existing = await this.find(conversation_token)
 
         if (existing) {
             return existing
@@ -27,7 +27,7 @@ class Conversation {
         // Si no existe, la creamos
         const { data: created, error } = await supabase
             .from('conversations')
-            .insert({ conversation_token: conversationToken })
+            .insert({ conversation_token })
             .select()
             .single()
 
@@ -73,14 +73,14 @@ class Conversation {
      * Borra una conversación y devuelve la fila borrada, o null si no existía.
      * Sus mensajes se borran por el ON DELETE CASCADE.
      *
-     * @param {string} conversationToken - UUID público de la conversación
+     * @param {string} conversation_token - UUID público de la conversación
      * @returns {Promise<Object|null>} La conversación borrada, o null si no existía
      */
-    static async delete(conversationToken) {
+    static async delete(conversation_token) {
         const { data, error } = await supabase
             .from('conversations')
             .delete()
-            .eq('conversation_token', conversationToken)
+            .eq('conversation_token', conversation_token)
             .select()
             .maybeSingle()
 

@@ -79,13 +79,12 @@ class DocumentController {
       storageUploaded = true
 
       // Creamos el registro en la BD y obtenemos su ID para relacionar los chunks
-      // Mapeamos snake_case (schema) a camelCase (modelo)
       document = await Document.create({
         name: file.originalname,
-        sourceType: 'file',
-        sourceUri: storagePath,
-        folderId: folder_id ?? null,
-        expiresAt: expires_at ?? null,
+        source_type: 'file',
+        source_uri: storagePath,
+        folder_id: folder_id ?? null,
+        expires_at: expires_at ?? null,
       })
 
       // Indexamos el documento en RAG, relacionando los chunks con el ID del documento creado
@@ -163,11 +162,10 @@ class DocumentController {
     }
 
     // ## Lógica:
-    // Mapeamos snake_case (schema) a camelCase (modelo)
     const document = await Document.update(id, {
       name,
-      folderId: folder_id,
-      expiresAt: expires_at,
+      folder_id,
+      expires_at,
     })
     if (!document) {
       throw new AppError("Documento no encontrado", 404)
