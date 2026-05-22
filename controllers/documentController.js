@@ -129,10 +129,11 @@ class DocumentController {
       throw new AppError("Documento no encontrado", 404)
     }
 
-    // Generamos una URL firmada temporal
+    // Generamos una URL firmada temporal con cabecera de descarga forzada
     const url = await StorageService.getSignedUrl(
       document.source_uri,
-      config.storage.signedUrlExpirySeconds
+      config.storage.signedUrlExpirySeconds,
+      document.name
     )
 
     // ## Return:

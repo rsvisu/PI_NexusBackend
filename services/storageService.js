@@ -43,10 +43,10 @@ class StorageService {
      * @param {number} expiresInSeconds - Tiempo de validez de la URL
      * @returns {Promise<string>} La URL firmada
      */
-    static async getSignedUrl(path, expiresInSeconds) {
+    static async getSignedUrl(path, expiresInSeconds, downloadName = true) {
         const { data, error } = await supabase.storage
             .from(config.storage.bucket)
-            .createSignedUrl(path, expiresInSeconds);
+            .createSignedUrl(path, expiresInSeconds, { download: downloadName });
 
         if (error) throw error;
 
