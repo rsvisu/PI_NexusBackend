@@ -4,12 +4,27 @@ import consola from "consola";
 import config from "../config/app.js";
 import AppError from "../errors/AppError.js";
 
-const chatModel = new ChatOpenAI({
+// # Configuración:
+// Configuración base del modelo
+const modelConfig = {
   apiKey: config.llm.openAI.apiKey,
   modelName: config.llm.openAI.chatModel,
   temperature: 0.2,
-});
+};
 
+// Construimos el modelo inicial
+let chatModel = new ChatOpenAI(modelConfig);
+
+// Devuelve el modelo activo, recreándolo si la API key cambió en config
+function getChatModel() {
+  if (config.llm.openAI.apiKey !== modelConfig.apiKey) {
+    modelConfig.apiKey = config.llm.openAI.apiKey;
+    chatModel = new ChatOpenAI(modelConfig);
+  }
+  return chatModel;
+}
+
+// # Prompt:
 const SYSTEM_PROMPT =
   `# ROL
   Eres el asistente virtual oficial del CPIFP Los Enlaces (Zaragoza). Tu objetivo es resolver dudas de alumnos y familias de forma profesional, amable y eficiente.
@@ -52,10 +67,10 @@ function buildSystemPrompt(context) {
   return SYSTEM_PROMPT + "\n" + contextPrompt
 }
 
+// # Servicio:
 class LlmService {
   static async generateResponse(userMessage, history = [], context = []) {
     try {
-
       // Iniciamos el array con el System Prompt (con contexto RAG si lo hay)
       const messages = [new SystemMessage(buildSystemPrompt(context))];
 
@@ -70,8 +85,7 @@ class LlmService {
       // Añadimos la pregunta actual del usuario al final
       messages.push(new HumanMessage(userMessage));
 
-      // Invocamos al modelo con t0do el array de mensajes
-      const response = await chatModel.invoke(messages);
+      const response = await getChatModel().invoke(messages);
 
       return response.content;
     } catch (error) {

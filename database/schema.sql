@@ -105,3 +105,17 @@ CREATE TABLE feedback (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (message_id)
 );
+
+-- Configuración global del sistema
+CREATE TABLE system_config (
+    id INT PRIMARY KEY DEFAULT 1,
+    rate_limit_max INT NOT NULL DEFAULT 10,
+    openai_api_key TEXT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT system_config_single_row CHECK (id = 1)
+);
+
+-- Fila inicial con valores por defecto
+INSERT INTO system_config (id, rate_limit_max, openai_api_key)
+VALUES (1, 10, NULL)
+ON CONFLICT (id) DO NOTHING;
