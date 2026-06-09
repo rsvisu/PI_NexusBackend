@@ -18,13 +18,13 @@ const config = {
     openAI: {
       apiKey: process.env.OPENAI_API_KEY,
       chatModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      embeddingModel: process.env.OPENAI_MODEL || 'text-embedding-3-small',
+      embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
     }
   },
 
   chat: {
-    // Configuración del rate limiter de la ruta de chat
-    rateLimitMax: parseInt(process.env.CHAT_RATE_LIMIT_MAX || '10'),
+    // El rate limit real se gestiona desde el dashboard (system_config); esto es el respaldo si la BD no responde
+    rateLimitMax: 10,
     rateLimitWindowSeconds: 60,
   },
 
