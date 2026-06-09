@@ -13,5 +13,8 @@ chatRouter.post('/', chatRateLimiter, ChatController.handleChatRequest)
 chatRouter.get('/history/:conversation_token', ChatController.getChatHistory)
 chatRouter.delete('/history/:conversation_token', ChatController.deleteChatHistory)
 
+// Feedback de un mensaje
+chatRouter.post('/feedback', ChatController.submitFeedback)
+
 // ## Exportación:
 export default chatRouter

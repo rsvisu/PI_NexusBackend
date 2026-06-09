@@ -12,6 +12,7 @@ import chatRouter from './routes/chatRoutes.js';
 import conversationsRouter from './routes/conversationsRoutes.js';
 import documentRouter from './routes/documentRoutes.js';
 import folderRouter from './routes/folderRoutes.js';
+import feedbackRouter from './routes/feedbackRoutes.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
 import authMiddleware from './middlewares/authMiddleware.js';
@@ -49,6 +50,8 @@ app.use('/api/conversation', authMiddleware, conversationsRouter);
 app.use('/api/document', authMiddleware, documentRouter);
 // ### Carpetas
 app.use('/api/folder', authMiddleware, folderRouter);
+// ### Feedback
+app.use('/api/feedback', authMiddleware, feedbackRouter);
 
 
 // # Errores:

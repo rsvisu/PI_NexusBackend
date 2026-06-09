@@ -95,3 +95,13 @@ CREATE TABLE messages (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE
 );
+
+-- Valoraciones de los mensajes del asistente (un voto por mensaje)
+CREATE TABLE feedback (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    message_id BIGINT NOT NULL REFERENCES messages (id) ON DELETE CASCADE,
+    vote TEXT NOT NULL CHECK (vote IN ('positive', 'negative')),
+    is_reviewed BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (message_id)
+);

@@ -2,6 +2,7 @@ import LlmService from '../services/llmService.js'
 import RagService from '../services/ragService.js'
 import Conversation from '../models/Conversation.js'
 import Message from '../models/Message.js'
+import Feedback from '../models/Feedback.js'
 import AppError from '../errors/AppError.js'
 
 import { uuidValidateV4 } from '../utils/uuid.js'
@@ -34,10 +35,12 @@ class ChatController {
     const aiResponse = await LlmService.generateResponse(message, history, context)
 
     // Guardamos la respuesta junto con las fuentes usadas
-    await Message.save(conversation.id, 'assistant', aiResponse, context)
+    const savedMessage = await Message.save(conversation.id, 'assistant', aiResponse, context)
 
     // ## Return
+    // Devolvemos el id del mensaje para que el widget pueda votarlo después
     return res.json({
+      id: savedMessage.id,
       content: aiResponse,
       sender_type: "assistant"
     })
@@ -98,6 +101,48 @@ class ChatController {
     // ## Return
     return res.status(204).send()
 
+  }
+
+  static async submitFeedback(req, res) {
+    // ## Variables:
+    const { message_id, vote, conversation_token } = req.body
+
+    // ## Validaciones:
+    if (!conversation_token || !uuidValidateV4(conversation_token)) {
+      throw new AppError("Se requiere un 'conversation_token' valido", 400)
+    }
+
+    const id = Number.parseInt(message_id)
+    if (Number.isNaN(id) || id <= 0) {
+      throw new AppError("Se requiere un 'message_id' valido", 400)
+    }
+
+    if (vote !== 'positive' && vote !== 'negative') {
+      throw new AppError("El 'vote' debe ser 'positive' o 'negative'", 400)
+    }
+
+    // ## Lógica:
+    // Verificamos que el mensaje pertenece a la conversación del usuario
+    // para que nadie pueda votar mensajes de conversaciones ajenas
+    const conversation = await Conversation.find(conversation_token)
+    if (!conversation) {
+      throw new AppError("Conversación no encontrada", 404)
+    }
+
+    const message = await Message.findById(id)
+    if (!message || message.conversation_id !== conversation.id) {
+      throw new AppError("Mensaje no encontrado", 404)
+    }
+
+    // Solo se votan las respuestas del asistente, no los mensajes del usuario
+    if (message.sender_type !== 'assistant') {
+      throw new AppError("Solo se pueden votar las respuestas del asistente", 400)
+    }
+
+    const feedback = await Feedback.create({ message_id: id, vote })
+
+    // ## Return
+    return res.status(201).json({ feedback })
   }
 
 }
