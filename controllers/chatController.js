@@ -5,8 +5,12 @@ import Message from '../models/Message.js'
 import Feedback from '../models/Feedback.js'
 import AppError from '../errors/AppError.js'
 import config from '../config/app.js'
+import consola from 'consola'
 
 import { uuidValidateV4 } from '../utils/uuid.js'
+
+// Texto que se guarda y se muestra cuando falla la generación de la respuesta
+const ERROR_RESPONSE_MESSAGE = "Lo siento, ahora mismo no puedo responder. Por favor, inténtalo de nuevo en unos minutos."
 
 class ChatController {
   static async handleChatRequest(req, res) {
@@ -37,12 +41,20 @@ class ChatController {
     await Message.save(conversation.id, 'user', message)
 
     // Generamos la respuesta con el contexto inyectado en el prompt
-    const context = await RagService.retrieveContext(message)
-    // TODO: si la generacion falla guardar en la base de datos que hubo un error en la respuesta para poder mostrarlo al usuario y al recargar y en el dashboard, y no perder el contexto de la conversación
-    const aiResponse = await LlmService.generateResponse(message, history, context)
+    // Si la generación falla, persistimos un mensaje de error para no perder el hilo al recargar
+    let aiResponse
+    let sources = null
+    try {
+      const context = await RagService.retrieveContext(message)
+      aiResponse = await LlmService.generateResponse(message, history, context)
+      sources = context
+    } catch (error) {
+      consola.error("Fallo al generar la respuesta del asistente:", error)
+      aiResponse = ERROR_RESPONSE_MESSAGE
+    }
 
-    // Guardamos la respuesta junto con las fuentes usadas
-    const savedMessage = await Message.save(conversation.id, 'assistant', aiResponse, context)
+    // Guardamos la respuesta junto con las fuentes usadas; sources queda en null si hubo error
+    const savedMessage = await Message.save(conversation.id, 'assistant', aiResponse, sources)
 
     // ## Return
     // Devolvemos el id del mensaje para que el widget pueda votarlo después
