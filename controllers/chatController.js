@@ -91,7 +91,7 @@ class ChatController {
     }
 
     // ## Lógica:
-    const deleted = await Conversation.delete(conversation_token)
+    const deleted = await Conversation.deleteByToken(conversation_token)
 
     // Si deleted es null, significa que no existía la conversación
     if (!deleted) {
