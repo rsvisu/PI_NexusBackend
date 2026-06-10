@@ -4,6 +4,7 @@ import Conversation from '../models/Conversation.js'
 import Message from '../models/Message.js'
 import Feedback from '../models/Feedback.js'
 import AppError from '../errors/AppError.js'
+import config from '../config/app.js'
 
 import { uuidValidateV4 } from '../utils/uuid.js'
 
@@ -25,6 +26,12 @@ class ChatController {
     // Buscamos o creamos la conversación con ese token y cargamos el historial desde la base de datos
     const conversation = await Conversation.findOrCreate(conversation_token)
     const history = await Message.getHistory(conversation.id)
+
+    // En la primera interacción persistimos el saludo como primer mensaje
+    // para que la conversación quede completa al inspeccionarla en el dashboard
+    if (history.length === 0) {
+      await Message.save(conversation.id, 'assistant', config.widget.greeting)
+    }
 
     // Guardamos el mensaje del usuario
     await Message.save(conversation.id, 'user', message)
