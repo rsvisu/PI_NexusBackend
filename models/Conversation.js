@@ -76,11 +76,31 @@ class Conversation {
      * @param {string} conversation_token - UUID público de la conversación
      * @returns {Promise<Object|null>} La conversación borrada, o null si no existía
      */
-    static async delete(conversation_token) {
+    static async deleteByToken(conversation_token) {
         const { data, error } = await supabase
             .from('conversations')
             .delete()
             .eq('conversation_token', conversation_token)
+            .select()
+            .maybeSingle()
+
+        if (error) throw error
+
+        return data
+    }
+
+    /**
+     * Borra una conversación por su id interno y devuelve la fila borrada,
+     * o null si no existía. Sus mensajes se borran por el ON DELETE CASCADE.
+     *
+     * @param {number} id - id interno de la conversación
+     * @returns {Promise<Object|null>} La conversación borrada, o null si no existía
+     */
+    static async deleteById(id) {
+        const { data, error } = await supabase
+            .from('conversations')
+            .delete()
+            .eq('id', id)
             .select()
             .maybeSingle()
 

@@ -32,6 +32,25 @@ class ConversationsController {
     return res.json({ conversation, messages })
   }
 
+  static async delete(req, res) {
+    // ## Variables:
+    const id = Number.parseInt(req.params.id)
+
+    // ## Validaciones:
+    if (Number.isNaN(id) || id <= 0) {
+      throw new AppError("Se requiere un 'id' válido", 400)
+    }
+
+    // ## Lógica:
+    const deleted = await Conversation.deleteById(id)
+    if (!deleted) {
+      throw new AppError("Conversación no encontrada", 404)
+    }
+
+    // ## Return:
+    return res.json({ conversation: deleted })
+  }
+
 }
 
 export default ConversationsController
