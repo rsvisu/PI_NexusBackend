@@ -109,13 +109,14 @@ CREATE TABLE feedback (
 -- Configuración global del sistema
 CREATE TABLE system_config (
     id INT PRIMARY KEY DEFAULT 1,
-    rate_limit_max INT NOT NULL DEFAULT 10,
+    rate_limit_max INT,
     openai_api_key TEXT,
+    greeting TEXT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT system_config_single_row CHECK (id = 1)
 );
 
--- Fila inicial con valores por defecto
-INSERT INTO system_config (id, rate_limit_max, openai_api_key)
-VALUES (1, 10, NULL)
+-- Insertamos la fila única
+INSERT INTO system_config (id)
+VALUES (1)
 ON CONFLICT (id) DO NOTHING;

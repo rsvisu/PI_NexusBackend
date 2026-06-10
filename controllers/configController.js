@@ -1,7 +1,8 @@
 import SystemConfig from '../models/SystemConfig.js'
 import AppError from '../errors/AppError.js'
 import ConfigSchemas from '../schemas/configSchemas.js'
-import config from '../config/app.js'
+import config, { applyRuntimeConfig } from '../config/app.js'
+import defaults from '../config/defaults.js'
 
 /**
  * Verifica que una API key es válida llamando al endpoint más barato de OpenAI.
@@ -28,13 +29,32 @@ class ConfigController {
     // La API key no se devuelve nunca; solo indicamos si hay una configurada
     return res.json({
       rate_limit_max: saved.rate_limit_max,
-      openai_api_key_set: saved.openai_api_key !== null
+      openai_api_key_set: saved.openai_api_key !== null,
+      greeting: saved.greeting,
+      defaults: {
+        rate_limit_max: defaults.rateLimitMax,
+        greeting: defaults.greeting
+      }
+    })
+  }
+
+  /**
+   * Configuración que el widget necesita al arrancar.
+   * Endpoint público, por eso solo expone campos no sensibles.
+   * @param {*} req
+   * @param {*} res
+   * @returns
+   */
+  static async getPublicConfig(req, res) {
+    // El saludo ya está resuelto (BD o default) en el config en memoria
+    return res.json({
+      greeting: config.chat.greeting
     })
   }
 
   static async updateConfig(req, res) {
     // ## Variables:
-    const { rate_limit_max, openai_api_key } = ConfigSchemas.validateUpdate(req.body)
+    const { rate_limit_max, openai_api_key, greeting } = ConfigSchemas.validateUpdate(req.body)
 
     // ## Lógica:
     // Validamos solo si viene una clave nueva; null la borra y undefined no la toca
@@ -42,24 +62,20 @@ class ConfigController {
       await validateOpenAIKey(openai_api_key)
     }
 
-    const updated = await SystemConfig.update({ rate_limit_max, openai_api_key })
+    const updated = await SystemConfig.update({ rate_limit_max, openai_api_key, greeting })
 
-    // Mutamos config en memoria para que rateLimiter y llmService los lean en el siguiente request
-    if (rate_limit_max !== undefined) {
-      config.chat.rateLimitMax = rate_limit_max
-    }
-    if (openai_api_key !== undefined) {
-      config.llm.openAI.apiKey = openai_api_key
-      // Sobreescribimos la clave si existe en el .env
-      if (process.env.OPENAI_API_KEY) {
-        config.llm.openAI.apiKey = process.env.OPENAI_API_KEY
-      }
-    }
+    // Reflejamos los cambios en el config en memoria para que rateLimiter, llmService y el widget los lean
+    applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting })
 
     // ## Return:
     return res.json({
       rate_limit_max: updated.rate_limit_max,
-      openai_api_key_set: updated.openai_api_key !== null
+      openai_api_key_set: updated.openai_api_key !== null,
+      greeting: updated.greeting,
+      defaults: {
+        rate_limit_max: defaults.rateLimitMax,
+        greeting: defaults.greeting
+      }
     })
   }
 }

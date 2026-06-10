@@ -6,7 +6,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import consola from 'consola';
 // ## Configuración
-import config from './config/app.js';
+import config, { applyRuntimeConfig } from './config/app.js';
 // ## Rutas
 import chatRouter from './routes/chatRoutes.js';
 import conversationsRouter from './routes/conversationsRoutes.js';
@@ -14,6 +14,7 @@ import documentRouter from './routes/documentRoutes.js';
 import folderRouter from './routes/folderRoutes.js';
 import feedbackRouter from './routes/feedbackRoutes.js';
 import configRouter from './routes/configRoutes.js';
+import ConfigController from './controllers/configController.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
 import authMiddleware from './middlewares/authMiddleware.js';
@@ -41,6 +42,8 @@ app.use(morgan('dev', { stream: { write: (msg) => consola.log(msg.trim()) } }));
 // ## Públicas:
 // ### Chat
 app.use('/api/chat', chatRouter);
+// ### Config del widget (saludo, sugerencias...)
+app.get('/api/config/public', ConfigController.getPublicConfig);
 // ## Estatus
 app.get('/api/status', (req, res) => {
   res.json({ status: 'OK', message: 'Servidor funcionando correctamente' });
@@ -67,17 +70,13 @@ app.use(errorHandler);
 // Si falla (BD no disponible, tabla no creada aún), arrancamos con los valores del .env
 async function initConfig() {
   try {
-    // Cargamos la configuración
+    // Cargamos la configuración y la aplicamos al config en memoria
     const savedConfig = await SystemConfig.get()
-
-    // La aplicamos
-    config.chat.rateLimitMax = savedConfig.rate_limit_max
-
-    config.llm.openAI.apiKey = savedConfig.openai_api_key
-    // Sobrescribimos la clave si existe en el .env
-    if (process.env.OPENAI_API_KEY) {
-      config.llm.openAI.apiKey = process.env.OPENAI_API_KEY
-    }
+    applyRuntimeConfig({
+      rate_limit_max: savedConfig.rate_limit_max,
+      openai_api_key: savedConfig.openai_api_key,
+      greeting: savedConfig.greeting
+    })
 
     consola.info('Configuración cargada desde la base de datos')
   } catch {

@@ -1,6 +1,8 @@
 /**
  * Configuración de la aplicación
  */
+import defaults from './defaults.js'
+
 const config = {
   // Configuración general de la aplicación
   app: {
@@ -23,8 +25,10 @@ const config = {
   },
 
   chat: {
-    // El rate limit real se gestiona desde el dashboard (system_config); esto es el respaldo si la BD no responde
-    rateLimitMax: 10,
+    // Valores vivos: arrancan en el default y los sobrescribe applyRuntimeConfig con lo de BD
+    rateLimitMax: defaults.rateLimitMax,
+    greeting: defaults.greeting,
+    
     rateLimitWindowSeconds: 60,
   },
 
@@ -41,6 +45,27 @@ const config = {
 
     // Tiempo de validez de las URLs firmadas para descargar (en segundos)
     signedUrlExpirySeconds: 60
+  }
+}
+
+/**
+ * Aplica al objeto `config` en memoria los valores de configuración guardados en BD.
+ * undefined = no tocar, null = volver al default.
+ * @param {object} values
+ * @param {number|null} [values.rate_limit_max]
+ * @param {string|null} [values.openai_api_key]
+ * @param {string|null} [values.greeting]
+ */
+export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting }) {
+  if (rate_limit_max !== undefined) {
+    config.chat.rateLimitMax = rate_limit_max !== null ? rate_limit_max : defaults.rateLimitMax
+  }
+  if (greeting !== undefined) {
+    config.chat.greeting = greeting !== null ? greeting : defaults.greeting
+  }
+  if (openai_api_key !== undefined) {
+    // El .env tiene prioridad sobre la BD (pensado para pruebas en local)
+    config.llm.openAI.apiKey = process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY : openai_api_key
   }
 }
 
