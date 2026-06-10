@@ -75,7 +75,8 @@ async function initConfig() {
     applyRuntimeConfig({
       rate_limit_max: savedConfig.rate_limit_max,
       openai_api_key: savedConfig.openai_api_key,
-      greeting: savedConfig.greeting
+      greeting: savedConfig.greeting,
+      suggestions: savedConfig.suggestions,
     })
 
     consola.info('Configuración cargada desde la base de datos')

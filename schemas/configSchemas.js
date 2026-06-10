@@ -9,6 +9,8 @@ const updateSchema = z.object({
     openai_api_key: z.string().trim().min(1, 'La API key no puede estar vacía').nullable().optional(),
     // string = nuevo saludo, null = borrarlo (usar default), ausente = no tocarlo
     greeting: z.string().trim().min(1, 'El saludo no puede estar vacío').max(500, 'El saludo no puede superar los 500 caracteres').nullable().optional(),
+    // array de strings = nuevas sugerencias, null = borrarlas (no se muestran), ausente = no tocar
+    suggestions: z.array(z.string().trim().min(1)).max(5, 'El máximo es 5 sugerencias').nullable().optional(),
 })
 
 // # Funciones validadoras:

@@ -112,6 +112,7 @@ CREATE TABLE system_config (
     rate_limit_max INT,
     openai_api_key TEXT,
     greeting TEXT,
+    suggestions JSONB,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT system_config_single_row CHECK (id = 1)
 );

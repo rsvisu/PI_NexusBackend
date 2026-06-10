@@ -25,11 +25,17 @@ const config = {
   },
 
   chat: {
-    // Valores vivos: arrancan en el default y los sobrescribe applyRuntimeConfig con lo de BD
-    rateLimitMax: defaults.rateLimitMax,
-    greeting: defaults.greeting,
-    
+    rateLimitMax: defaults.rateLimitMax,  // Configurable por el admin
+
     rateLimitWindowSeconds: 60,
+  },
+
+  // Apariencia y comportamiento del widget público; configurable por el admin desde el dashboard
+  widget: {
+    // Mensaje de bienvenida: configurable por el admin
+    greeting: defaults.greeting,
+    // Sugerencias iniciales clicables: configurables por el admin; vacío = no se muestran
+    suggestions: [],
   },
 
   // Configuración de subida de documentos
@@ -55,13 +61,17 @@ const config = {
  * @param {number|null} [values.rate_limit_max]
  * @param {string|null} [values.openai_api_key]
  * @param {string|null} [values.greeting]
+ * @param {string[]|null} [values.suggestions]
  */
-export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting }) {
+export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, suggestions }) {
   if (rate_limit_max !== undefined) {
     config.chat.rateLimitMax = rate_limit_max !== null ? rate_limit_max : defaults.rateLimitMax
   }
   if (greeting !== undefined) {
-    config.chat.greeting = greeting !== null ? greeting : defaults.greeting
+    config.widget.greeting = greeting !== null ? greeting : defaults.greeting
+  }
+  if (suggestions !== undefined) {
+    config.widget.suggestions = suggestions !== null ? suggestions : []
   }
   if (openai_api_key !== undefined) {
     // El .env tiene prioridad sobre la BD (pensado para pruebas en local)
