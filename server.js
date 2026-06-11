@@ -14,6 +14,7 @@ import documentRouter from './routes/documentRoutes.js';
 import folderRouter from './routes/folderRoutes.js';
 import feedbackRouter from './routes/feedbackRoutes.js';
 import configRouter from './routes/configRoutes.js';
+import statsRouter from './routes/statsRoutes.js';
 import ConfigController from './controllers/configController.js';
 // ## Middlewares
 import errorHandler from './middlewares/errorHandler.js';
@@ -60,6 +61,8 @@ app.use('/api/folder', authMiddleware, folderRouter);
 app.use('/api/feedback', authMiddleware, feedbackRouter);
 // ### Configuración
 app.use('/api/config', authMiddleware, configRouter);
+// ### Estadísticas del dashboard
+app.use('/api/stats', authMiddleware, statsRouter);
 
 
 // # Errores:
