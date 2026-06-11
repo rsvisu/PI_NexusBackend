@@ -10,7 +10,7 @@ class Document {
     static async getAll() {
         const { data, error } = await supabase
             .from('documents')
-            .select('id, folder_id, name, source_type, source_uri, is_active, expires_at, created_at')
+            .select('id, folder_id, name, source_uri, is_active, expires_at, created_at')
             .order('created_at', { ascending: false })
 
         if (error) throw error
@@ -30,10 +30,10 @@ class Document {
         return data
     }
 
-    static async create({ name, source_type, source_uri, folder_id, expires_at }) {
+    static async create({ name, source_uri, folder_id, expires_at }) {
         const { data, error } = await supabase
             .from('documents')
-            .insert({ name, source_type, source_uri, folder_id, expires_at })
+            .insert({ name, source_uri, folder_id, expires_at })
             .select()
             .single() // <- solo no da error si se devuelve exactamente una fila
 

@@ -12,15 +12,12 @@ CREATE TABLE folders (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Metadatos de cada documento fuente (PDF, URL...)
+-- Metadatos de cada documento fuente (PDF, TXT, MD...)
 -- El ciclo de vida (activo, caducado) se gestiona aquí, no en los chunks
 CREATE TABLE documents (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     folder_id BIGINT REFERENCES folders (id) ON DELETE SET NULL,
     name TEXT NOT NULL,
-    source_type TEXT NOT NULL CHECK (
-        source_type IN ('file', 'url')
-    ),
     source_uri TEXT,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     expires_at TIMESTAMPTZ,

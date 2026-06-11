@@ -84,7 +84,6 @@ class DocumentController {
       // Creamos el registro en la BD y obtenemos su ID para relacionar los chunks
       document = await Document.create({
         name: file.originalname,
-        source_type: 'file',
         source_uri: storagePath,
         folder_id: folder_id ?? null,
         expires_at: expires_at ?? null,
