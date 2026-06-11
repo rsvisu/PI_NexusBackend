@@ -83,6 +83,7 @@ async function initConfig() {
       openai_api_key: savedConfig.openai_api_key,
       greeting: savedConfig.greeting,
       suggestions: savedConfig.suggestions,
+      system_prompt: savedConfig.system_prompt,
     })
 
     consola.info('Configuración cargada desde la base de datos')

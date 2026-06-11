@@ -24,6 +24,8 @@ const config = {
     },
     // Similitud coseno mínima para considerar un chunk relevante (0-1)
     similarityThreshold: 0.50,
+    // Prompt de sistema base; configurable por el admin desde el dashboard. null = sin prompt de sistema
+    systemPrompt: null,
   },
 
   chat: {
@@ -64,8 +66,9 @@ const config = {
  * @param {string|null} [values.openai_api_key]
  * @param {string|null} [values.greeting]
  * @param {string[]|null} [values.suggestions]
+ * @param {string|null} [values.system_prompt]
  */
-export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, suggestions }) {
+export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, suggestions, system_prompt }) {
   if (rate_limit_max !== undefined) {
     config.chat.rateLimitMax = rate_limit_max !== null ? rate_limit_max : defaults.rateLimitMax
   }
@@ -78,6 +81,9 @@ export function applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, s
   if (openai_api_key !== undefined) {
     // El .env tiene prioridad sobre la BD (pensado para pruebas en local)
     config.llm.openAI.apiKey = process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY : openai_api_key
+  }
+  if (system_prompt !== undefined) {
+    config.llm.systemPrompt = system_prompt
   }
 }
 
