@@ -6,25 +6,43 @@ import config from '../config/app.js';
 
 // # Configuración:
 
-// ## Embedding:
-const embeddings = new OpenAIEmbeddings({
-    apiKey: config.llm.openAI.apiKey,
-    modelName: config.llm.openAI.embeddingModel,
-});
-
-// ## Vector store:
-// vectorStore solo se usa para leer
-const vectorStore = new SupabaseVectorStore(embeddings, {
-    client: supabase,
-    tableName: 'document_chunks',
-    queryName: 'match_document_chunks',
-});
-
 // ## Texts splitter:
 const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
 });
+
+// ## Embedding y vector store:
+// Se construyen bajo demanda para recoger la apiKey cargada desde BD al arrancar
+let embeddingsApiKey = config.llm.openAI.apiKey;
+
+let embeddings = new OpenAIEmbeddings({
+    apiKey: embeddingsApiKey,
+    modelName: config.llm.openAI.embeddingModel,
+});
+
+let vectorStore = new SupabaseVectorStore(embeddings, {
+    client: supabase,
+    tableName: 'document_chunks',
+    queryName: 'match_document_chunks',
+});
+
+// Devuelve embeddings y vectorStore actualizados si la API key cambió en config
+function getEmbeddingInstances() {
+    if (config.llm.openAI.apiKey !== embeddingsApiKey) {
+        embeddingsApiKey = config.llm.openAI.apiKey;
+        embeddings = new OpenAIEmbeddings({
+            apiKey: embeddingsApiKey,
+            modelName: config.llm.openAI.embeddingModel,
+        });
+        vectorStore = new SupabaseVectorStore(embeddings, {
+            client: supabase,
+            tableName: 'document_chunks',
+            queryName: 'match_document_chunks',
+        });
+    }
+    return { embeddings, vectorStore };
+}
 
 // # Servicio:
 class RagService {
@@ -37,14 +55,15 @@ class RagService {
      * @param {*} documentId - ID del documento al que pertenecen los chunks
      */
     static async indexDocument(rawDocs, documentId) {
+        const { embeddings: currentEmbeddings } = getEmbeddingInstances();
         const docs = await splitter.splitDocuments(rawDocs);
 
-        // INSERT manual en vez de vectorStore.addDocuments: 
+        // INSERT manual en vez de vectorStore.addDocuments:
         // addDocuments solo escribe content, metadata, embedding en una tabla y no
         // admite document_id. Lo necesitamos para ligar cada chunk a su documento
         // fuente, y así borrarlos en cascada y filtrar por is_active en la búsqueda
         const texts = docs.map((doc) => doc.pageContent);
-        const vectors = await embeddings.embedDocuments(texts);
+        const vectors = await currentEmbeddings.embedDocuments(texts);
 
         const rows = texts.map((content, i) => ({
             document_id: documentId,
@@ -64,7 +83,8 @@ class RagService {
      * @returns 
      */
     static async retrieveContext(query, k = 4) {
-        const results = await vectorStore.similaritySearchWithScore(query, k);
+        const { vectorStore: currentVectorStore } = getEmbeddingInstances();
+        const results = await currentVectorStore.similaritySearchWithScore(query, k);
         return results.map(([doc, score]) => ({
             content: doc.pageContent,
             metadata: doc.metadata,
