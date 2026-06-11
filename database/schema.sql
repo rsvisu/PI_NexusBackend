@@ -114,6 +114,7 @@ CREATE TABLE system_config (
     openai_api_key TEXT,
     greeting TEXT,
     suggestions JSONB,
+    system_prompt TEXT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT system_config_single_row CHECK (id = 1)
 );

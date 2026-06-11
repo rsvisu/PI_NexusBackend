@@ -18,14 +18,16 @@ class SystemConfig {
    * @param {string|null} [options.openai_api_key] - null borra la clave guardada
    * @param {string|null} [options.greeting] - saludo inicial del widget; null borra el guardado
    * @param {string[]|null} [options.suggestions] - sugerencias del widget; null las borra
+   * @param {string|null} [options.system_prompt] - prompt de sistema del LLM; null restaura el default
    */
-  static async update({ rate_limit_max, openai_api_key, greeting, suggestions }) {
+  static async update({ rate_limit_max, openai_api_key, greeting, suggestions, system_prompt }) {
     const fields = { updated_at: new Date().toISOString() }
 
     if (rate_limit_max !== undefined) fields.rate_limit_max = rate_limit_max
     if (openai_api_key !== undefined) fields.openai_api_key = openai_api_key
     if (greeting !== undefined) fields.greeting = greeting
     if (suggestions !== undefined) fields.suggestions = suggestions
+    if (system_prompt !== undefined) fields.system_prompt = system_prompt
 
     const response = await supabase
       .from('system_config')

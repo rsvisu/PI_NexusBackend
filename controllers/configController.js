@@ -32,9 +32,10 @@ class ConfigController {
       openai_api_key_set: saved.openai_api_key !== null,
       greeting: saved.greeting,
       suggestions: saved.suggestions,
+      system_prompt: saved.system_prompt,
       defaults: {
         rate_limit_max: defaults.rateLimitMax,
-        greeting: defaults.greeting
+        greeting: defaults.greeting,
       }
     })
   }
@@ -56,7 +57,7 @@ class ConfigController {
 
   static async updateConfig(req, res) {
     // ## Variables:
-    const { rate_limit_max, openai_api_key, greeting, suggestions } = ConfigSchemas.validateUpdate(req.body)
+    const { rate_limit_max, openai_api_key, greeting, suggestions, system_prompt } = ConfigSchemas.validateUpdate(req.body)
 
     // ## Lógica:
     // Validamos solo si viene una clave nueva; null la borra y undefined no la toca
@@ -64,10 +65,10 @@ class ConfigController {
       await validateOpenAIKey(openai_api_key)
     }
 
-    const updated = await SystemConfig.update({ rate_limit_max, openai_api_key, greeting, suggestions })
+    const updated = await SystemConfig.update({ rate_limit_max, openai_api_key, greeting, suggestions, system_prompt })
 
     // Reflejamos los cambios en el config en memoria para que rateLimiter, llmService y el widget los lean
-    applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, suggestions })
+    applyRuntimeConfig({ rate_limit_max, openai_api_key, greeting, suggestions, system_prompt })
 
     // ## Return:
     return res.json({
@@ -75,9 +76,10 @@ class ConfigController {
       openai_api_key_set: updated.openai_api_key !== null,
       greeting: updated.greeting,
       suggestions: updated.suggestions,
+      system_prompt: updated.system_prompt,
       defaults: {
         rate_limit_max: defaults.rateLimitMax,
-        greeting: defaults.greeting
+        greeting: defaults.greeting,
       }
     })
   }

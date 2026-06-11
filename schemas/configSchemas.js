@@ -11,6 +11,8 @@ const updateSchema = z.object({
     greeting: z.string().trim().min(1, 'El saludo no puede estar vacío').max(500, 'El saludo no puede superar los 500 caracteres').nullable().optional(),
     // array de strings = nuevas sugerencias, null = borrarlas (no se muestran), ausente = no tocar
     suggestions: z.array(z.string().trim().min(1)).max(5, 'El máximo es 5 sugerencias').nullable().optional(),
+    // string = nuevo prompt, null = restaurar el default, ausente = no tocar
+    system_prompt: z.string().trim().min(1, 'El prompt no puede estar vacío').max(8000, 'El prompt no puede superar los 8000 caracteres').nullable().optional(),
 })
 
 // # Funciones validadoras:
