@@ -25,6 +25,9 @@ import SystemConfig from './models/SystemConfig.js';
 // # Inicialización de la aplicación:
 const app = express();
 
+// Lee la IP real del cliente desde X-Forwarded-For (el proxy de Coolify la añade)
+app.set('trust proxy', 1);
+
 // # Middlewares:
 // ## Cors
 app.use(cors({
