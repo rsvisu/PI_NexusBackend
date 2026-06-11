@@ -82,14 +82,17 @@ class RagService {
      * @param {number} k - Número de chunks a devolver
      * @returns 
      */
-    static async retrieveContext(query, k = 4) {
+    static async retrieveContext(query, k = 10) {
+        // Solo incluimos chunks con similitud suficiente para no contaminar el prompt con contexto irrelevante
         const { vectorStore: currentVectorStore } = getEmbeddingInstances();
         const results = await currentVectorStore.similaritySearchWithScore(query, k);
-        return results.map(([doc, score]) => ({
-            content: doc.pageContent,
-            metadata: doc.metadata,
-            similarity: score,
-        }));
+        return results
+            .filter(([, score]) => score >= config.llm.similarityThreshold)
+            .map(([doc, score]) => ({
+                content: doc.pageContent,
+                metadata: doc.metadata,
+                similarity: score,
+            }));
     }
 }
 

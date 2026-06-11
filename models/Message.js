@@ -16,12 +16,13 @@ class Message {
 
     static async getHistory(conversation_id) {
         // Cargamos todos los mensajes de la conversación ordenados por fecha
-        const { data } = await supabase
+        const { data, error } = await supabase
             .from('messages')
-            .select('id, sender_type, content, created_at')
+            .select('id, sender_type, content, sources, created_at')
             .eq('conversation_id', conversation_id)
             .order('created_at', { ascending: true });
 
+        if (error) throw error
         return data || [];
     }
 

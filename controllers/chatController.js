@@ -47,7 +47,13 @@ class ChatController {
     try {
       const context = await RagService.retrieveContext(message)
       aiResponse = await LlmService.generateResponse(message, history, context)
-      sources = context
+      // Guardamos y enviamos solo ciertos campos de sources
+      sources = context.map((chunk) => ({
+        document_name: chunk.metadata.document_name,
+        similarity: chunk.similarity,
+        loc: chunk.metadata.loc,
+        blobType: chunk.metadata.blobType,
+      }))
     } catch (error) {
       consola.error("Fallo al generar la respuesta del asistente:", error)
       aiResponse = ERROR_RESPONSE_MESSAGE
@@ -61,6 +67,7 @@ class ChatController {
     return res.json({
       id: savedMessage.id,
       content: aiResponse,
+      sources: sources,
       sender_type: "assistant"
     })
   }

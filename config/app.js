@@ -21,7 +21,9 @@ const config = {
       apiKey: process.env.OPENAI_API_KEY,
       chatModel: process.env.OPENAI_MODEL || 'gpt-4o-mini',
       embeddingModel: process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small',
-    }
+    },
+    // Similitud coseno mínima para considerar un chunk relevante (0-1)
+    similarityThreshold: 0.50,
   },
 
   chat: {
