@@ -75,10 +75,7 @@ $$;
 CREATE TABLE conversations (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     conversation_token UUID UNIQUE NOT NULL,
-    started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    status TEXT DEFAULT 'active' CHECK (
-        status IN ('active', 'closed')
-    )
+    started_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Mensajes de cada conversación
