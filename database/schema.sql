@@ -57,7 +57,8 @@ BEGIN
     SELECT
         dc.id,
         dc.content,
-        dc.metadata,
+        -- Mezclamos el nombre del documento en el metadata para que llegue al widget sin cambiar el contrato de la RPC
+        dc.metadata || jsonb_build_object('document_name', d.name) AS metadata,
         1 - (dc.embedding <=> query_embedding) AS similarity
     FROM document_chunks dc
     JOIN documents d ON d.id = dc.document_id
