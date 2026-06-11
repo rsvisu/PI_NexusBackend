@@ -8,7 +8,7 @@ function errorHandler(err, req, res, _next) {
         return res.status(err.statusCode).json({ error: err.message })
     }
 
-    // Error de validación de Zod: lo traduciomos a error 400 y mandamos el mensaje con solo el primer issue
+    // Error de validación de Zod: lo traducimos a error 400 y mandamos el mensaje con solo el primer issue
     if (err instanceof ZodError) {
         const firstIssue = err.issues[0]
         const path = firstIssue.path.join('.')
