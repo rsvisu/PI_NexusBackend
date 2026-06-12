@@ -68,7 +68,7 @@ END;
 $$;
 
 -- =============================================
--- Chat: conversaciones y mensajes
+-- Chat: conversaciones, mensajes y feedback
 -- =============================================
 
 -- Conversaciones
@@ -100,6 +100,10 @@ CREATE TABLE feedback (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (message_id)
 );
+
+-- =============================================
+-- Sistema: configuración del sistema
+-- =============================================
 
 -- Configuración global del sistema
 CREATE TABLE system_config (
