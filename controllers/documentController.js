@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
 import slugify from 'slugify';
+import sanitizeFilename from 'sanitize-filename';
+import mime from 'mime-types';
 import consola from 'consola';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import { TextLoader } from '@langchain/classic/document_loaders/fs/text';
@@ -131,11 +133,27 @@ class DocumentController {
       throw new AppError("Documento no encontrado", 404)
     }
 
+    // Saneamos el nombre antes de usarlo como cabecera de descarga: si document.name trae
+    // caracteres como ":" o "/" (p. ej. un nombre que en origen era una URL), la librería
+    // de Supabase Storage genera una URL firmada corrupta y el navegador descarga un nombre ilegible
+    let downloadName = sanitizeFilename(document.name) || 'documento'
+
+    // Comparamos contra el Content-Type real de Storage en vez de adivinar por el nombre
+    try {
+      const info = await StorageService.getInfo(document.source_uri)
+      const extension = mime.extension(info.contentType)
+      if (extension && !downloadName.toLowerCase().endsWith(`.${extension}`)) {
+        downloadName = `${downloadName}.${extension}`
+      }
+    } catch (error) {
+      consola.warn(`No se pudo recuperar el Content-Type de Storage para añadir extensión: ${document.source_uri}`, error)
+    }
+
     // Generamos una URL firmada temporal con cabecera de descarga forzada
     const url = await StorageService.getSignedUrl(
       document.source_uri,
       config.storage.signedUrlExpirySeconds,
-      document.name
+      downloadName
     )
 
     // ## Return:

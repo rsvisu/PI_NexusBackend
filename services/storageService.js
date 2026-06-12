@@ -36,6 +36,22 @@ class StorageService {
     }
 
     /**
+     * Recupera los metadatos de un archivo del bucket, incluido su Content-Type real
+     *
+     * @param {string} path - Ruta del archivo dentro del bucket
+     * @returns {Promise<Object>} Metadatos del archivo
+     */
+    static async getInfo(path) {
+        const { data, error } = await supabase.storage
+            .from(config.storage.bucket)
+            .info(path);
+
+        if (error) throw error;
+
+        return data;
+    }
+
+    /**
      * Genera una URL firmada temporal para descargar el archivo
      * La URL expira a los segundos configurados
      *
